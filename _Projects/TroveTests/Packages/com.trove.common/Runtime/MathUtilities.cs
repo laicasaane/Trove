@@ -5,17 +5,19 @@ namespace Trove
 {
     public static class MathUtilities
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float4 ToFloat4(this float3 f)
         {
             return new float4(f.x, f.y, f.z, 0f);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float3 ToFloat3(this float4 f)
         {
             return new float3(f.x, f.y, f.z);
         }
 
         // From Unity.Physics
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float3 ToEuler(this quaternion q, math.RotationOrder order = math.RotationOrder.XYZ)
         {
             const float epsilon = 1e-6f;
@@ -169,22 +171,14 @@ namespace Trove
                     }
             }
 
-            switch (order)
-            {
-                case math.RotationOrder.XZY:
-                    return euler.xzy;
-                case math.RotationOrder.YZX:
-                    return euler.zxy;
-                case math.RotationOrder.YXZ:
-                    return euler.yxz;
-                case math.RotationOrder.ZXY:
-                    return euler.yzx;
-                case math.RotationOrder.ZYX:
-                    return euler.zyx;
-                case math.RotationOrder.XYZ:
-                default:
-                    return euler;
-            }
+            return order switch {
+                math.RotationOrder.XZY => euler.xzy,
+                math.RotationOrder.YZX => euler.zxy,
+                math.RotationOrder.YXZ => euler.yxz,
+                math.RotationOrder.ZXY => euler.yzx,
+                math.RotationOrder.ZYX => euler.zyx,
+                _ => euler,
+            };
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

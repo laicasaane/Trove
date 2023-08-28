@@ -54,7 +54,7 @@ public struct ShakeTween : IComponentData
             float amplitudeTimerRatio = 1f - (amplitudeUpTimer / (1f / Frequency)); // How close to completion the timer is
             currentAmplitudeRatio = math.lerp(currentAmplitudeRatio, targetAmplitudeRatio, amplitudeTimerRatio);
         }
-        float amplitudeDecayRatio = EasingUtilities.CalculateEasing(1f - Timer.GetNormalizedTime(), AmplitudeEasing);
+        float amplitudeDecayRatio = Easing.Ease(1f - Timer.GetNormalizedTime(), AmplitudeEasing);
         currentAmplitudeRatio = math.min(currentAmplitudeRatio, amplitudeDecayRatio);
         float noiseAmplitude = MaxAmplitude * currentAmplitudeRatio;
 

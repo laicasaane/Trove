@@ -36,7 +36,7 @@ public struct FlashTween : IComponentData
 
     public void Update(ref float4 emissiveColor)
     {
-        float intensityScale = EasingUtilities.CalculateEasing(1f - Timer.GetNormalizedTime(), DecayEasing);
+        float intensityScale = Easing.Ease(1f - Timer.GetNormalizedTime(), DecayEasing);
 
         float flashNormalizedTime = (Timer.GetTime() % FlashPeriod) / FlashPeriod;
         flashNormalizedTime *= 2f;
@@ -44,7 +44,7 @@ public struct FlashTween : IComponentData
         {
             flashNormalizedTime = 1f - (flashNormalizedTime - 1f);
         }
-        float flashValue = EasingUtilities.CalculateEasing(flashNormalizedTime, FlashEasing);
+        float flashValue = Easing.Ease(flashNormalizedTime, FlashEasing);
 
         float4 currentPeakFlashColor = math.lerp(InitialColor, FlashColor, intensityScale);
         emissiveColor = math.lerp(InitialColor, currentPeakFlashColor, flashValue);
