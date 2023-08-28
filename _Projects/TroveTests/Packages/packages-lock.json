@@ -1,39 +1,39 @@
 {
   "dependencies": {
     "com.trove.attributes": {
-      "version": "file:../../../com.trove.attributes",
+      "version": "file:com.trove.attributes",
       "depth": 0,
-      "source": "local",
+      "source": "embedded",
       "dependencies": {
         "com.unity.entities": "1.0.10"
       }
     },
     "com.trove.common": {
-      "version": "file:../../../com.trove.common",
+      "version": "file:com.trove.common",
       "depth": 0,
-      "source": "local",
+      "source": "embedded",
       "dependencies": {
         "com.unity.entities": "1.0.10"
       }
     },
     "com.trove.polymorphicstructs": {
-      "version": "file:../../../com.trove.polymorphicstructs",
+      "version": "file:com.trove.polymorphicstructs",
       "depth": 0,
-      "source": "local",
+      "source": "embedded",
       "dependencies": {}
     },
     "com.trove.tweens": {
-      "version": "file:../../../com.trove.tweens",
+      "version": "file:com.trove.tweens",
       "depth": 0,
-      "source": "local",
+      "source": "embedded",
       "dependencies": {
         "com.unity.entities": "1.0.10"
       }
     },
     "com.trove.utilityai": {
-      "version": "file:../../../com.trove.utilityai",
+      "version": "file:com.trove.utilityai",
       "depth": 0,
-      "source": "local",
+      "source": "embedded",
       "dependencies": {
         "com.unity.entities": "1.0.10"
       }
