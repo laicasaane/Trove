@@ -4,7 +4,8 @@ using UnityEngine;
 
 public enum AttributeType
 {
-    Strength,
-    Dexterity,
-    Intelligence,
+    Undefined = 0,
+    Strength = 1,
+    Dexterity = 2,
+    Intelligence = 3,
 }

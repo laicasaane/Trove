@@ -10,136 +10,325 @@ using AttributeChanger = Trove.Attributes.AttributeChanger<AttributeModifier, At
 using AttributeUtilities = Trove.Attributes.AttributeUtilities<AttributeModifier, AttributeModifierStack, AttributeGetterSetter>;
 using AttributeCommand = Trove.Attributes.AttributeCommand<AttributeModifier, AttributeModifierStack, AttributeGetterSetter>;
 
+public static class NameAPI
+{
+    private const string UNCHANGED = "Unchanged";
+    private const string CHANGED = "Changed";
+    private const string STRENGTH = nameof(AttributeType.Strength);
+    private const string DEXTERITY = nameof(AttributeType.Dexterity);
+    private const string INTELLIGENCE = nameof(AttributeType.Intelligence);
+
+    private static readonly FixedString64Bytes FixedUnchanged = UNCHANGED;
+    private static readonly FixedString64Bytes FixedChanged = CHANGED;
+
+    public static readonly FixedString64Bytes FixedStrength = STRENGTH;
+    public static readonly FixedString64Bytes FixedDexterity = DEXTERITY;
+    public static readonly FixedString64Bytes FixedIntelligence = INTELLIGENCE;
+
+    public static FixedString64Bytes GetUnchanged(int id)
+    {
+        var fs = FixedUnchanged;
+        fs.Append('-');
+        fs.Append(id);
+        return fs;
+    }
+
+    public static FixedString64Bytes GetChanged(int id)
+    {
+        var fs = FixedChanged;
+        fs.Append('-');
+        fs.Append(id);
+        return fs;
+    }
+
+    public static FixedString64Bytes GetChanged(int id, AttributeType attribType, int subId)
+    {
+        var fs = FixedChanged;
+
+        switch (attribType)
+        {
+            case AttributeType.Strength:
+                fs.Append(FixedStrength);
+                break;
+
+            case AttributeType.Dexterity:
+                fs.Append(FixedDexterity);
+                break;
+
+            case AttributeType.Intelligence:
+                fs.Append(FixedIntelligence);
+                break;
+        }
+
+        fs.Append('-');
+        fs.Append(id);
+        fs.Append('-');
+        fs.Append(subId);
+        return fs;
+    }
+}
+
 [System.Serializable]
 public struct ChangingAttribute : IComponentData
 {
     public AttributeType AttributeType;
 }
 
+public struct AttributeDuration : IComponentData
+{
+    public float value;
+}
+
+public struct AttributeElapsedTime : IComponentData
+{
+    public float value;
+}
+
+[BurstCompile]
 public partial struct AttributesTesterSystem : ISystem
+{
+    [BurstCompile]
+    public void OnUpdate(ref SystemState state)
+    {
+        var singleton = SystemAPI.GetSingleton<BeginInitializationEntityCommandBufferSystem.Singleton>();
+
+        var job = new CreateJob {
+            ecb = singleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter(),
+        };
+
+        state.Dependency = job.ScheduleParallelByRef(state.Dependency);
+    }
+
+    [BurstCompile]
+    private partial struct CreateJob : IJobEntity
+    {
+        public EntityCommandBuffer.ParallelWriter ecb;
+        
+        private void Execute(in AttributesTester test, in Entity entity, [ChunkIndexInQuery] int indexInQuery)
+        {
+            AttributeCommandElement.CreateAttributeCommandsEntity(
+                  ecb
+                , indexInQuery
+                , out DynamicBuffer<AttributeCommand> commands
+            );
+
+            // Entities with changing attributes
+            for (int i = 0; i < test.ChangingAttributesCount; i++)
+            {
+                if (i % 5 == 0)
+                {
+                    var newAttributeOwner = CreateAttributesOwner(ecb, indexInQuery, default, NameAPI.GetChanged(i));
+
+                    Create(
+                          ecb
+                        , indexInQuery
+                        , ref commands
+                        , newAttributeOwner
+                        , test.ChangingAttributesChildDepth
+                        , i
+                        , AttributeType.Strength
+                    );
+
+                    Create(
+                          ecb
+                        , indexInQuery
+                        , ref commands
+                        , newAttributeOwner
+                        , test.ChangingAttributesChildDepth
+                        , i
+                        , AttributeType.Dexterity
+                    );
+
+                    Create(
+                          ecb
+                        , indexInQuery
+                        , ref commands
+                        , newAttributeOwner
+                        , test.ChangingAttributesChildDepth
+                        , i
+                        , AttributeType.Intelligence
+                    );
+                }
+                else
+                {
+                    var attributeType = (AttributeType)((i % 3) + 1);
+                    var newAttributeOwner = CreateAttributesOwner(ecb, indexInQuery, attributeType, NameAPI.GetChanged(i));
+
+                    Create(
+                          ecb
+                        , indexInQuery
+                        , ref commands
+                        , newAttributeOwner
+                        , test.ChangingAttributesChildDepth
+                        , i
+                        , attributeType
+                    );
+                }
+            }
+
+            ecb.DestroyEntity(indexInQuery, entity);
+        }
+
+        private static void Create(
+              EntityCommandBuffer.ParallelWriter ecb
+            , int sortKey
+            , ref DynamicBuffer<AttributeCommand> commands
+            , Entity parent
+            , int childDepth
+            , int i
+            , AttributeType attributeType
+        )
+        {
+            for (int c = 0; c < childDepth; c++)
+            {
+                var last = c == childDepth - 1;
+                var child = CreateAttributesOwner(ecb, sortKey, last ? attributeType : default, NameAPI.GetChanged(i, attributeType, c));
+
+                if (last == false)
+                {
+                    ecb.AddComponent(sortKey, child, new AttributeDuration {
+                        value = 2f
+                    });
+
+                    ecb.AddComponent<AttributeElapsedTime>(sortKey, child);
+                }
+
+                commands.Add(AttributeCommand.Create_AddModifier(
+                      new AttributeReference(parent, (int)attributeType)
+                    , AttributeModifier.Create_AddFromAttribute(new AttributeReference(child, (int)attributeType))
+                ));
+
+                parent = child;
+            }
+        }
+
+        private static Entity CreateAttributesOwner(
+              EntityCommandBuffer.ParallelWriter ecb
+            , int sortKey
+            , AttributeType changingAttr
+            , in FixedString64Bytes name
+        )
+        {
+            var entity = ecb.CreateEntity(sortKey);
+
+            AttributeUtilities.MakeAttributeOwner(ecb, sortKey, entity);
+
+            ecb.SetName(sortKey, entity, name);
+
+            ecb.AddComponent(sortKey, entity, new Strength {
+                Values = new AttributeValues(10f),
+            });
+
+            ecb.AddComponent(sortKey, entity, new Dexterity {
+                Values = new AttributeValues(10f),
+            });
+
+            ecb.AddComponent(sortKey, entity, new Intelligence {
+                Values = new AttributeValues(10f),
+            });
+
+            if (changingAttr == AttributeType.Strength)
+            {
+                ecb.AddComponent(sortKey, entity, new ChangingAttribute {
+                    AttributeType = AttributeType.Strength,
+                });
+            }
+
+            if (changingAttr == AttributeType.Dexterity)
+            {
+                ecb.AddComponent(sortKey, entity, new ChangingAttribute {
+                    AttributeType = AttributeType.Dexterity,
+                });
+            }
+
+            if (changingAttr == AttributeType.Intelligence)
+            {
+                ecb.AddComponent(sortKey, entity, new ChangingAttribute {
+                    AttributeType = AttributeType.Intelligence,
+                });
+            }
+
+            return entity;
+        }
+    }
+}
+
+[BurstCompile]
+public partial struct ChangeAttributeSystem : ISystem
 {
     private AttributeChanger _attributeChanger;
 
+    [BurstCompile]
     public void OnCreate(ref SystemState state)
     {
         _attributeChanger = new AttributeChanger(ref state);
     }
 
-    public void OnDestroy(ref SystemState state)
-    { }
-
+    [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
         _attributeChanger.UpdateData(ref state);
 
-        // Test init
-        EntityCommandBuffer ecb = new EntityCommandBuffer(Allocator.Temp);
-        foreach (var (test, entity) in SystemAPI.Query<AttributesTester>().WithEntityAccess())
-        {
-            Entity attributeCommandsEntity = AttributeCommandElement.CreateAttributeCommandsEntity(ecb, out DynamicBuffer<AttributeCommand> commands);
-
-            // Entities with unchanging attributes
-            for (int i = 0; i < test.UnchangingAttributesCount; i++)
-            {
-                CreateAttributesOwner(ecb, false, false, false);
-            }
-
-            // Entities with changing attributes
-            for (int i = 0; i < test.ChangingAttributesCount; i++)
-            {
-                Entity newAttributeOwner = CreateAttributesOwner(ecb, true, false, false);
-
-                Entity currentParentAttribute = newAttributeOwner;
-                for (int c = 0; c < test.ChangingAttributesChildDepth; c++)
-                {
-                    Entity newChildAttribute = CreateAttributesOwner(ecb, false, false, false);
-                    commands.Add(AttributeCommand.Create_AddModifier(
-                        new AttributeReference(newChildAttribute, (int)AttributeType.Strength),
-                        AttributeModifier.Create_AddFromAttribute(new AttributeReference(currentParentAttribute, (int)AttributeType.Strength))));
-
-                    currentParentAttribute = newChildAttribute;
-                }
-            }
-
-            ecb.DestroyEntity(entity);
-        }
-
-        ecb.Playback(state.EntityManager);
-        ecb.Dispose();
-
-        // Re-update data after structural changes
-        _attributeChanger.UpdateData(ref state);
-
-        // Process deferred changes
-        state.WorldUnmanaged.GetExistingUnmanagedSystem<ProcessAttributeChangerCommandsSystem>().Update(state.WorldUnmanaged);
-
-        // Changing attributes
-        ChangingAttributesJob changingAttributesJob = new ChangingAttributesJob
+        var job = new ChangeJob
         {
             DeltaTime = SystemAPI.Time.DeltaTime,
             AttributeChanger = _attributeChanger,
         };
-        state.Dependency = changingAttributesJob.Schedule(state.Dependency);
 
-        state.EntityManager.CompleteAllTrackedJobs();
+        state.Dependency = job.Schedule(state.Dependency);
     }
 
-    private static Entity CreateAttributesOwner(EntityCommandBuffer ecb, bool changingStr, bool changingDex, bool changingInt)
+    [BurstCompile]
+    private partial struct ChangeJob : IJobEntity
     {
-        Entity newAttributeOwner = ecb.CreateEntity();
-        AttributeUtilities.MakeAttributeOwner(ecb, newAttributeOwner);
+        public float DeltaTime;
+        public AttributeChanger AttributeChanger;
 
-        ecb.AddComponent(newAttributeOwner, new Strength
+        void Execute(Entity entity, in ChangingAttribute changingAttribute)
         {
-            Values = new AttributeValues(10f),
-        });
-
-        ecb.AddComponent(newAttributeOwner, new Dexterity
-        {
-            Values = new AttributeValues(10f),
-        });
-
-        ecb.AddComponent(newAttributeOwner, new Intelligence
-        {
-            Values = new AttributeValues(10f),
-        });
-
-        if (changingStr)
-        {
-            ecb.AddComponent(newAttributeOwner, new ChangingAttribute
-            {
-                AttributeType = AttributeType.Strength,
-            });
+            AttributeChanger.AddBaseValue(new AttributeReference(entity, (int)changingAttribute.AttributeType), DeltaTime);
         }
-
-        if (changingDex)
-        {
-            ecb.AddComponent(newAttributeOwner, new ChangingAttribute
-            {
-                AttributeType = AttributeType.Dexterity,
-            });
-        }
-
-        if (changingInt)
-        {
-            ecb.AddComponent(newAttributeOwner, new ChangingAttribute
-            {
-                AttributeType = AttributeType.Intelligence,
-            });
-        }
-
-        return newAttributeOwner;
     }
 }
 
 [BurstCompile]
-public partial struct ChangingAttributesJob : IJobEntity
+public partial struct AttributesDestroySystem : ISystem
 {
-    public float DeltaTime;
-    public AttributeChanger AttributeChanger;
-
-    void Execute(Entity entity, in ChangingAttribute changingAttribute)
+    [BurstCompile]
+    public void OnUpdate(ref SystemState state)
     {
-        AttributeChanger.AddBaseValue(new AttributeReference(entity, (int)changingAttribute.AttributeType), DeltaTime);
+        var singleton = SystemAPI.GetSingleton<BeginInitializationEntityCommandBufferSystem.Singleton>();
+        
+        var job = new DestroyAttributesJob {
+            deltaTime = SystemAPI.Time.DeltaTime,
+            ecb = singleton.CreateCommandBuffer(state.WorldUnmanaged).AsParallelWriter(),
+        };
+
+        state.Dependency = job.ScheduleParallelByRef(state.Dependency);
+    }
+}
+
+[BurstCompile]
+public partial struct DestroyAttributesJob : IJobEntity
+{
+    public float deltaTime;
+    public EntityCommandBuffer.ParallelWriter ecb;
+
+    private void Execute(
+          in Entity entity
+        , in AttributeDuration duration
+        , ref AttributeElapsedTime time
+        , ref DynamicBuffer<AttributeObserver> observersBuffer
+        , [ChunkIndexInQuery] int indexInQuery
+    )
+    {
+        time.value += deltaTime;
+
+        if (time.value >= duration.value)
+        {
+            AttributeCommandElement.CreateAttributeCommandsEntity(ecb, indexInQuery, out DynamicBuffer<AttributeCommand> attributeCommands);
+            AttributeUtilities.NotifyAttributesOwnerDestruction(entity, ref observersBuffer, ref attributeCommands);
+            ecb.DestroyEntity(indexInQuery, entity);
+        }
     }
 }
