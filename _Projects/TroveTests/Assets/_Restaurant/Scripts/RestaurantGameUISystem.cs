@@ -1,9 +1,5 @@
-using Unity.Burst;
 using Unity.Entities;
-using Unity.Mathematics;
-using Unity.Transforms;
 using Unity.Collections;
-using System;
 
 public partial class RestaurantGameUISystem : SystemBase
 {

@@ -1,12 +1,7 @@
 using UnityEngine;
 using Unity.Entities;
-using Unity.Mathematics;
-using Unity.Collections;
 using System;
-using System.Collections.Generic;
-using Trove;
 using Trove.UtilityAI;
-using Action = Trove.UtilityAI.Action;
 
 [Serializable]
 public struct StressTestAIConsiderationSet : IComponentData

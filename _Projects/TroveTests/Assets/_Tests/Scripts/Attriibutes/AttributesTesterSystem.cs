@@ -1,11 +1,7 @@
 using Trove.Attributes;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Jobs;
-using UnityEngine;
 using AttributeChanger = Trove.Attributes.AttributeChanger<AttributeModifier, AttributeModifierStack, AttributeGetterSetter>;
 using AttributeUtilities = Trove.Attributes.AttributeUtilities<AttributeModifier, AttributeModifierStack, AttributeGetterSetter>;
 using AttributeCommand = Trove.Attributes.AttributeCommand<AttributeModifier, AttributeModifierStack, AttributeGetterSetter>;

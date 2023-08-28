@@ -1,11 +1,6 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using Trove;
-using Trove.Tweens;
 using Unity.Entities;
 using Unity.Transforms;
-using UnityEngine;
 
 [Serializable]
 public struct TweensTester : IComponentData

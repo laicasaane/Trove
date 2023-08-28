@@ -1,15 +1,11 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using Trove.Tweens;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
-using Unity.Rendering;
 using Unity.Transforms;
 using UnityEngine;
-using Unity.Logging;
 using Random = Unity.Mathematics.Random;
 
 [Serializable]

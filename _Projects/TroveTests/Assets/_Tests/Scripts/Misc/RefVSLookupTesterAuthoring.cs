@@ -1,8 +1,5 @@
 using Unity.Entities;
-using Unity.Mathematics;
 using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
 
 public class RefVSLookupTesterAuthoring : MonoBehaviour
 {

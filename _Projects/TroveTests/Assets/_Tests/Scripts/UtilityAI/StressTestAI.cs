@@ -1,9 +1,6 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using Trove.UtilityAI;
 using Unity.Entities;
-using Unity.Mathematics;
 
 [Serializable]
 public struct StressTestAI : IComponentData

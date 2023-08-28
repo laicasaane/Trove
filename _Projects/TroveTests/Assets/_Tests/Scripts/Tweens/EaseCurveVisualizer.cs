@@ -1,9 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Trove;
 using Trove.Tweens;
-using Unity.Mathematics;
 using Unity.Collections;
 using System;
 

@@ -2,11 +2,8 @@ using Unity.Entities;
 using Unity.Mathematics;
 using System;
 using Trove.Tweens;
-using Unity.Collections;
 using Trove;
 using Color = UnityEngine.Color;
-using Random = Unity.Mathematics.Random;
-using Unity.Transforms;
 using Unity.Burst;
 using Unity.Rendering;
 

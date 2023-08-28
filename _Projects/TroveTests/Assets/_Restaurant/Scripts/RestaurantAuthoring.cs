@@ -1,9 +1,5 @@
 using Unity.Entities;
-using Unity.Mathematics;
 using UnityEngine;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 
 public class RestaurantAuthoring : MonoBehaviour
 {

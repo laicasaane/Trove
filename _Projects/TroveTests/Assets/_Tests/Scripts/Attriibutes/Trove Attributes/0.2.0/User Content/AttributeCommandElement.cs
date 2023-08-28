@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Entities;
-using UnityEngine;
 using Trove.Attributes;
 using AttributeCommand = Trove.Attributes.AttributeCommand<AttributeModifier, AttributeModifierStack, AttributeGetterSetter>;
 

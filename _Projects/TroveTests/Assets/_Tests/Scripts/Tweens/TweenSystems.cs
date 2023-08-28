@@ -1,13 +1,6 @@
 using Unity.Burst;
 using Unity.Entities;
-using Unity.Mathematics;
 using Unity.Transforms;
-using Unity.Rendering;
-using Unity.Collections;
-using System;
-using Trove;
-using Trove.Tweens;
-using UnityEngine;
 
 [BurstCompile]
 [UpdateBefore(typeof(TransformSystemGroup))]
