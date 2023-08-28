@@ -1,5 +1,3 @@
-using Unity.Burst;
-using Unity.Entities;
 using Unity.Mathematics;
 
 namespace Trove.Tweens
