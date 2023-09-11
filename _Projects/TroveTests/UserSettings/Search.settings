@@ -1,4 +1,5 @@
 trackSelection = true
+refreshSearchWindowsInPlayMode = false
 fetchPreview = true
 defaultFlags = 0
 keepOpen = false
@@ -7,6 +8,11 @@ onBoardingDoNotAskAgain = true
 showPackageIndexes = false
 showStatusBar = false
 scopes = {
+	"picker_window_position_offset.A50C98BE" = "-875;273;762;550"
+	"picker_search_text.A50C98BE" = "t:AssemblyDefinitionAsset "
+	"last_search.A50C98BE" = "t:AssemblyDefinitionAsset "
+	"OpenInspectorPreview.A50C98BE" = "0"
+	"currentGroup.A50C98BE" = "all"
 }
 providers = {
 	adb = {
@@ -49,10 +55,62 @@ providers = {
 		priority = 50
 		defaultAction = null
 	}
+	archetype = {
+		active = true
+		priority = 2500
+		defaultAction = null
+	}
+	journal = {
+		active = true
+		priority = 2500
+		defaultAction = null
+	}
+	profilermarkers = {
+		active = false
+		priority = 100
+		defaultAction = null
+	}
+	menu = {
+		active = true
+		priority = 80
+		defaultAction = null
+	}
+	settings = {
+		active = true
+		priority = 100
+		defaultAction = null
+	}
+	calculator = {
+		active = true
+		priority = 10
+		defaultAction = null
+	}
+	static_methods = {
+		active = true
+		priority = 85
+		defaultAction = null
+	}
+	component = {
+		active = true
+		priority = 2500
+		defaultAction = null
+	}
+	nodehierarchy = {
+		active = true
+		priority = 2500
+		defaultAction = null
+	}
+	system = {
+		active = true
+		priority = 2500
+		defaultAction = null
+	}
 }
 objectSelectors = {
 }
 recentSearches = [
+	"t:AssemblyDefinitionAsset "
+	""
 ]
 searchItemFavorites = [
 ]
@@ -65,3 +123,5 @@ queryBuilder = false
 ignoredProperties = "id;name;classname;imagecontentshash"
 helperWidgetCurrentArea = "all"
 disabledIndexers = ""
+minIndexVariations = 2
+findProviderIndexHelper = true

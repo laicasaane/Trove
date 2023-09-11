@@ -33,6 +33,7 @@
 [Ee]xported[Oo]bj/
 .consulo/
 *.csproj
+*.csproj.meta
 *.unityproj
 *.sln
 *.suo
